@@ -1,0 +1,44 @@
+s.echo("Yay, you have installed CodeSimpleScript.")
+s.echo("<BR>Yay, run again becase you have installed CodeSimpleScript.")
+
+f.myfunctionname()
+f.helloreturn()
+f.helloreturn()
+f.helloreturn()
+f.helloreturn()
+f.helloreturn()
+
+f.myfunctionname{
+	v.varhere=5
+	if v.varhere==5
+		s.echo("<BR>Hey! The number is 5!")
+	else
+		s.echo("<BR>The number is not 5!")
+	end
+	
+	if not v.varhere==6
+		s.echo("<BR>Hey! did not match 6!")
+	else
+		s.echo("<BR>The wait it matched 6?")
+	end
+	
+	v.testa=true
+	if v.testa true
+		s.echo("<BR>Found true yay")
+	end
+	
+	v.testa=false
+	if v.testa false
+		s.echo("<BR>Found false yay")
+	end
+}
+
+f.helloreturn{
+	`
+	<BR>Just a simple hello return using the raw outout backquote.
+	`
+}
+
+This should not show on the outside `<BR>raw output without checks, awesome for html output
+
+<div style='text-align:center;'>woot!</div>` this should not show up.
