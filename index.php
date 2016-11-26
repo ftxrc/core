@@ -62,6 +62,7 @@
 	$system=array();
 	$settings="";
 	$system["url"]="";
+	$system["url_code"]=false;
 	$system["debug"]=true;
 	$system["debug_log"]="";
 	$system["id"]=0;
@@ -80,10 +81,11 @@
 	header('X-Powered-By: SimpleScript');
 	
 	//--Break down URL to get file needed
-	$s=str_replace(".ssc","",$_SERVER["REQUEST_URI"]);
+	$s=$_SERVER["REQUEST_URI"];
 	$u=explode("/",ltrim($s, '/'));
 	while(list($key,$val)=each($u)){
-		if ($val==""){ $val="index"; }
+		if (checkpreg("|([^\.]*)\.ssc|i",$val)==true){ $system["url_code"]=true; }
+		if ($val==""){ $val="index.ssc"; $system["url_code"]=true; }
 		$system["url"].="/".$val."";
 	}
 	
@@ -111,7 +113,21 @@
 		}
 	}
 	
-	ss_runscript($settings["location_code"].$system["url"].".ssc");
+	//--Check for what page we are loading
+	if ($system["url_code"]==true){
+		ss_runscript($settings["location_code"].$system["url"]);
+	}else{
+		$filedownload=$settings["location_code"].$system["url"];
+		if (file_exists($filedownload)) {
+		    header('Content-Type: application/octet-stream');
+		    header('Expires: 0');
+		    header('Cache-Control: must-revalidate');
+		    header('Pragma: public');
+		    header('Content-Length: ' . filesize($filedownload));
+		    readfile($filedownload);
+		    exit;
+		}
+	}
 	
 	if ($system["debug"]==true){ echo "<!-- ".$system["debug_log"]." \r\n-->"; }
 	
