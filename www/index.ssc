@@ -16,6 +16,22 @@ f.myfunctionname{
 		s.echo("<BR>The number is not 5!")
 	end
 	
+	if v.varhere>=5
+		s.echo("<BR>Hey! more or equal to 5!")
+	end
+	
+	if v.varhere>=4
+		s.echo("<BR>Hey! more or equal to 4!")
+	end
+	
+	if v.varhere>4
+		s.echo("<BR>Hey! more than 4!")
+	end
+	
+	if v.varhere>8
+		s.echo("<BR>Hey! more than 8!")
+	end
+	
 	if not v.varhere==6
 		s.echo("<BR>Hey! did not match 6!")
 	else
@@ -30,6 +46,18 @@ f.myfunctionname{
 	v.testa=false
 	if v.testa false
 		s.echo("<BR>Found false yay")
+	end
+}
+
+gv.loop=0
+
+f.looptest()
+
+f.looptest{
+	gv.loop+1
+	if gv.loop<=50
+		s.echo("<BR>Loop run! WOOT! and the var is gv.loop.")
+		f.looptest()
 	end
 }
 

@@ -24,6 +24,11 @@
 		}
 	}
 	
+	function microtime_float(){
+		list($usec, $sec) = explode(" ", microtime());
+		return ((float)$usec + (float)$sec);
+	}
+	
 	function removeblank($s){
 		return preg_replace("/(^[\r\n]*|[\r\n]+)[\s\t]*[\r\n]+/", "\n", $s);
 	}
@@ -90,13 +95,13 @@
 	
 	function ss_function_system($id,$t){
 		global $system;
-		$func=fetchpreg("|s.([^\(]*)\(|i",$t);
-		if ($system["debug"]==true){ $system["debug_log"].="\r\n> Run Function S - ".$func.""; }
+		$func=fetchpreg("|s\.([^\(]*)\(|i",$t);
+		if ($system["debug"]==true){ $system["debug_log"].="\r\n> Run Function S - ".$func." | ".$t.""; }
 		
 		if ($func=="echo"){
-			if (preg_match("|s.echo\(([^\)]*)\)|i", $t, $var)){
-				if ($system["debug"]==true){ $system["debug_log"].="\r\n> Run Function S - ECHO - ".$var[1]." - ".ss_input_checkvalue($id,ltrim($var[1])).""; }
-				return ss_input_checkvalue($id,ltrim($var[1]));
+			if (preg_match("|s\.echo\(([^\)]*)\)|i", $t, $var)){
+				if ($system["debug"]==true){ $system["debug_log"].="\r\n> Run Function S - ECHO - ".$var[1]." - ".ss_input_replacevar($id,ltrim($var[1])).""; }
+				return ss_input_replacevar($id,ltrim($var[1]));
 			}
 		}
 	}
@@ -113,7 +118,7 @@
 		$array = preg_split("/\r\n|\n|\r/", $t);
 		foreach ($array as $l){
 			
-			if (preg_match("|f.([^\{]*)\{|i", $l, $var)){
+			if (preg_match("|f\.([^\{]*)\{|i", $l, $var)){
 				$name=$var[1];
 				$f_reg_run=true;
 				$f_reg=true;
@@ -163,6 +168,7 @@
 	function ss_linebyline($t){
 		global $system;
 		
+		$time_start = microtime_float();
 		$r=""; //--return
 		$system["id"]=$system["id"]+1;
 		$id=$system["id"]; //--process id, used for varible and external function memory duing linebyline
@@ -218,23 +224,55 @@
 					}
 					
 					//--Check if system function
-					if (checkpreg("|s.([^\(]*)\(|i",$l)==true && $v["ran"]==false){
+					if (checkpreg("|s\.([^\(]*)\(|i",$l)==true && $v["ran"]==false){
 						$r.=ss_function_system($id,$l);
 						$v["ran"]=true;
 					}
 					
 					//--Check if function
-					if (checkpreg("|f.([^\(]*)\(\)|i",$l)==true && $v["ran"]==false){
-						$r.=ss_functions_run(fetchpreg("|f.([^\(]*)\(\)|i",$l));
+					if (checkpreg("|f\.([^\(]*)\(\)|i",$l)==true && $v["ran"]==false){
+						$r.=ss_functions_run(fetchpreg("|f\.([^\(]*)\(\)|i",$l));
+						$v["ran"]=true;
+					}
+					
+					//--Check if gv.variable set
+					if (checkpreg("|gv\.([^=]*)=|i",$l)==true && $v["ran"]==false){
+						$var=fetchpreg("|gv\.([^=]*)=|i",$l);
+						$value=ltrim(substr($l, strpos($l, "gv.".$var."=") + strlen("gv.".$var."=")));
+						$value=trim($value,'"');
+						$value=trim($value,'\'');
+						ss_linebyline_var_save("global",$var,$value);
+						$v["ran"]=true;
+					}
+					
+					//--Check if gv.variable add
+					if (checkpreg("|gv\.([^\+]*)\+|i",$l)==true && $v["ran"]==false){
+						$var=fetchpreg("|gv\.([^\+]*)\+|i",$l);
+						$value=ltrim(substr($l, strpos($l, "gv.".$var."+") + strlen("gv.".$var."+")));
+						$value=trim($value,'"');
+						$value=trim($value,'\'');
+						$value=ss_linebyline_var_get("global",$var)+$value;
+						ss_linebyline_var_save("global",$var,$value);
 						$v["ran"]=true;
 					}
 					
 					//--Check if v.variable set
-					if (checkpreg("|v.([^=]*)=|i",$l)==true && $v["ran"]==false){
-						$var=fetchpreg("|v.([^=]*)=|i",$l);
+					if (checkpreg("|v\.([^=]*)=|i",$l)==true && $v["ran"]==false){
+						$var=fetchpreg("|v\.([^=]*)=|i",$l);
 						$value=ltrim(substr($l, strpos($l, "v.".$var."=") + strlen("v.".$var."=")));
 						$value=trim($value,'"');
 						$value=trim($value,'\'');
+						ss_linebyline_var_save($id,$var,$value);
+						$v["ran"]=true;
+					}
+					
+					//--Check if v.variable add
+					if (checkpreg("|v\.([^\+]*)\+|i",$l)==true && $v["ran"]==false){
+						$var=fetchpreg("|v\.([^\+]*)\+|i",$l);
+						$value=ltrim(substr($l, strpos($l, "v.".$var."+") + strlen("v.".$var."+")));
+						$value=trim($value,'"');
+						$value=trim($value,'\'');
+						$value=ss_linebyline_var_get($id,$var)+$value;
 						ss_linebyline_var_save($id,$var,$value);
 						$v["ran"]=true;
 					}
@@ -266,7 +304,8 @@
 			$v["ran"]=false;
 		}
 		
-		if ($system["debug"]==true){ $system["debug_log"].="\r\n> LineByLine Invoke Finished"; }
+		$time_end = microtime_float();
+		if ($system["debug"]==true){ $system["debug_log"].="\r\n> LineByLine Invoke Finished, took (".round(($time_end-$time_start),2)." seconds)"; }
 		return $r;
 	}
 	
@@ -279,8 +318,8 @@
 		//--Match rule (if not a == b)
 		if (preg_match("|if not ([^=]*)==(.*)|i", $l, $var) && $found==false){
 			if ($system["debug"]==true){ $system["debug_log"].="\r\n> Found IF Statement Match - (if not a == b)"; }
-			$found1=ss_input_checkvalue($id,ltrim($var[1]));
-			$found2=ss_input_checkvalue($id,ltrim($var[2]));
+			$found1=ss_input_checkvar($id,ltrim($var[1]));
+			$found2=ss_input_checkvar($id,ltrim($var[2]));
 			if ($found1==$found2){
 				$found="no";
 			}else{
@@ -291,7 +330,7 @@
 		//--Match rule (if a false)
 		if (preg_match("|if ([^=\s]*) false|i", $l, $var) && $found==false){
 			if ($system["debug"]==true){ $system["debug_log"].="\r\n> Found IF Statement Match - (if a false) using var ".ltrim($var[1]).""; }
-			$found1=ss_input_checkvalue($id,ltrim($var[1]));
+			$found1=ss_input_checkvar($id,ltrim($var[1]));
 			$found2="false";
 			if ($found1==$found2){
 				$found="yes";
@@ -303,7 +342,7 @@
 		//--Match rule (if a true)
 		if (preg_match("|if ([^=\s]*) true|i", $l, $var) && $found==false){
 			if ($system["debug"]==true){ $system["debug_log"].="\r\n> Found IF Statement Match - (if a true) using var ".ltrim($var[1]).""; }
-			$found1=ss_input_checkvalue($id,ltrim($var[1]));
+			$found1=ss_input_checkvar($id,ltrim($var[1]));
 			$found2="true";
 			if ($found1==$found2){
 				$found="yes";
@@ -315,9 +354,57 @@
 		//--Match rule (if a == b)
 		if (preg_match("|if ([^=]*)==(.*)|i", $l, $var) && $found==false){
 			if ($system["debug"]==true){ $system["debug_log"].="\r\n> Found IF Statement Match - (if a == b)"; }
-			$found1=ss_input_checkvalue($id,ltrim($var[1]));
-			$found2=ss_input_checkvalue($id,ltrim($var[2]));
+			$found1=ss_input_checkvar($id,ltrim($var[1]));
+			$found2=ss_input_checkvar($id,ltrim($var[2]));
 			if ($found1==$found2){
+				$found="yes";
+			}else{
+				$found="no";
+			}
+		}
+		
+		//--Match rule (if a >= b)
+		if (preg_match("|if ([^>]*)>=([^=]*)|i", $l, $var) && $found==false){
+			if ($system["debug"]==true){ $system["debug_log"].="\r\n> Found IF Statement Match - (if a >= b)"; }
+			$found1=ss_input_checkvar($id,ltrim($var[1]));
+			$found2=ss_input_checkvar($id,ltrim($var[2]));
+			if ($found1>=$found2){
+				$found="yes";
+			}else{
+				$found="no";
+			}
+		}
+		
+		//--Match rule (if a <= b)
+		if (preg_match("|if ([^<]*)<=([^=]*)|i", $l, $var) && $found==false){
+			if ($system["debug"]==true){ $system["debug_log"].="\r\n> Found IF Statement Match - (if a <= b)"; }
+			$found1=ss_input_checkvar($id,ltrim($var[1]));
+			$found2=ss_input_checkvar($id,ltrim($var[2]));
+			if ($found1<=$found2){
+				$found="yes";
+			}else{
+				$found="no";
+			}
+		}
+		
+		//--Match rule (if a > b)
+		if (preg_match("|if ([^>]*)>([^=]*)|i", $l, $var) && $found==false){
+			if ($system["debug"]==true){ $system["debug_log"].="\r\n> Found IF Statement Match - (if a > b)"; }
+			$found1=ss_input_checkvar($id,ltrim($var[1]));
+			$found2=ss_input_checkvar($id,ltrim($var[2]));
+			if ($found1>=$found2){
+				$found="yes";
+			}else{
+				$found="no";
+			}
+		}
+		
+		//--Match rule (if a < b)
+		if (preg_match("|if ([^<]*)<([^=]*)|i", $l, $var) && $found==false){
+			if ($system["debug"]==true){ $system["debug_log"].="\r\n> Found IF Statement Match - (if a < b)"; }
+			$found1=ss_input_checkvar($id,ltrim($var[1]));
+			$found2=ss_input_checkvar($id,ltrim($var[2]));
+			if ($found1<=$found2){
 				$found="yes";
 			}else{
 				$found="no";
@@ -362,13 +449,45 @@
 		}
 	}
 	
-	function ss_input_checkvalue($id,$l){
+	function ss_input_replacevar($id,$l){
+		global $system;
+		$l=trim($l,'"');
+		$l=trim($l,'\'');
+		
+		if (checkpreg("|gv\.([A-Za-z0-9_-]*)|i",$l)==true){
+			$var=fetchpreg("|gv\.([A-Za-z0-9_-]*)|i",$l);
+			$va=ss_linebyline_var_get("global",$var);
+			if ($va!==false){
+				$l=str_replace("gv.".$var."",$va,$l);
+			}
+		}
+		
+		if (checkpreg("|v\.([A-Za-z0-9_-]*)|i",$l)==true){
+			$var=fetchpreg("|v\.([A-Za-z0-9_-]*)|i",$l);
+			$va=ss_linebyline_var_get($id,$var);
+			if ($va!==false){
+				$l=str_replace("v.".$var."",$va,$l);
+			}
+		}
+		
+		return $l;
+	}
+	
+	function ss_input_checkvar($id,$l){
 		$l=trim($l,'"');
 		$l=trim($l,'\'');
 		$found=$l;
 		
-		if (checkpreg("|v.(.*)|i",$l)==true){
-			$var=fetchpreg("|v.(.*)|i",$l);
+		if (checkpreg("|gv\.([A-Za-z0-9_-]*)|i",$l)==true){
+			$var=fetchpreg("|gv\.([A-Za-z0-9_-]*)|i",$l);
+			$va=ss_linebyline_var_get("global",$var);
+			if ($va!==false){
+				$found=$va;
+			}
+		}
+		
+		if (checkpreg("|v\.([A-Za-z0-9_-]*)|i",$l)==true){
+			$var=fetchpreg("|v\.([A-Za-z0-9_-]*)|i",$l);
 			$va=ss_linebyline_var_get($id,$var);
 			if ($va!==false){
 				$found=$va;
