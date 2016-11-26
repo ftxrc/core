@@ -23,7 +23,6 @@ function ss_run_linebyline($t){
 	foreach ($array as $l){
 		$l=ltrim($l);
 		if ($l!=""){
-			if ($system["debug"]==true){ $system["debug_log"].="\r\n> Line - \"".$l."\" - IF (".$v["if"].") If disabled (".$v["if_disabled"].")"; }
 			
 			//--Backquote areas are auto return without processing
 			if (strpos($l, '`') !== false && $v["if_disabled"]==false){
@@ -34,7 +33,7 @@ function ss_run_linebyline($t){
 					if ($system["debug"]==true){ $system["debug_log"].="\r\n> Backquote OFF with forward check before `"; } $v["backquote"]=false; $r.=strtok($l, "`");
 				}
 			}else{
-				if ($v["backquote"]==true){ $v["backquote"]=false; $v["ran"]=true; $r.=$l; }
+				if ($v["backquote"]==true){ $v["ran"]=true; $r.=$l; }
 			}
 			
 			//--Standard processing
@@ -133,11 +132,10 @@ function ss_run_linebyline($t){
 					ss_code_variables_save($id,$var,$value);
 					$v["ran"]=true;
 				}
-				
 			}
 			
 			//--IF statement ELSE
-			if (strpos($l, 'else') !== false && $v["ran"]==false && $v["if"]==true){
+			if (strpos($l, 'else') !== false && $v["backquote"]==false && $v["ran"]==false && $v["if"]==true){
 				if ($system["debug"]==true){ $system["debug_log"].="\r\n> LineByLine ELSE"; }
 				if ($v["if"]==true){
 					if ($v["if_disabled"]==true){
@@ -149,7 +147,7 @@ function ss_run_linebyline($t){
 			}
 			
 			//--IF statement END
-			if (strpos($l, 'end') !== false && $v["ran"]==false && $v["if"]==true){
+			if (strpos($l, 'end') !== false && $v["backquote"]==false && $v["ran"]==false && $v["if"]==true){
 				if ($system["debug"]==true){ $system["debug_log"].="\r\n> LineByLine END"; }
 				if ($v["if"]==true){
 					$v["ran"]=false;
