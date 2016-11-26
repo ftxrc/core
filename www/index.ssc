@@ -50,7 +50,6 @@ f.myfunctionname{
 }
 
 gv.loop=0
-
 f.looptest()
 
 f.looptest{
@@ -58,6 +57,11 @@ f.looptest{
 	if gv.loop<=50
 		s.echo("<BR>Loop run! WOOT! and the var is gv.loop.")
 		f.looptest()
+	else
+		gv.loop-20
+		s.echo("<BR>Loop run! WOOT! and the var is gv.loop.")
+		gv.loop+70
+		s.echo("<BR>Loop run! WOOT! and the var is gv.loop.")
 	end
 }
 

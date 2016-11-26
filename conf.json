@@ -1,7 +1,6 @@
 {
 	"location_code": "/www",
 	"location_database": "/data",
-	"location_storage": "/files",
 	"location_logs": "/logs",
 	"settings_function_loopmax": 2000,
 	"settings_coredebug": false
