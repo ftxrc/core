@@ -56,6 +56,12 @@ f.looptest{
 	gv.loop+1
 	if gv.loop<=50
 		s.echo("<BR>Loop run! WOOT! and the var is gv.loop.")
+		if gv.loop>=20
+			s.echo("<BR>Loop run! inside IF ROOF!!!! and the var is gv.loop.")
+		else
+			s.echo(" Fail.")
+		end
+		
 		f.looptest()
 	else
 		gv.loop-20
