@@ -39,26 +39,40 @@ function ss_code_variables_string_replace($id,$l){
 	$l=trim($l,'"');
 	$l=trim($l,'\'');
 
-	if (checkpreg("|f\.([^\(]*)\(|i",$l)==true){ //--Check if function
-		$func=fetchpreg("|f\.([^\(]*)\(|i",$l);
-		$data=ss_code_function_run($func);
-		$l=str_replace("f.".$func."()",$data,$l);
+	if (checkpreg("|f\.([A-Za-z0-9_-]*)\(|i",$l)==true){ //--Check if function
+		preg_match_all("|f\.([A-Za-z0-9_-]*)\(|i",$l, $got);
+		foreach ($got[1] as $func){
+			$data=ss_code_function_run($func);
+			$l=str_replace("f.".$func."()",$data,$l);
+		}
+	}
+
+	if (checkpreg("|s\.([A-Za-z0-9_-]*)\(([^\)]*)\)|i",$l)==true){ //--Check if system function
+		preg_match_all("|s\.([A-Za-z0-9_-]*)\(([^\)]*)\)|i",$l, $got);
+		foreach ($got[0] as $func){
+			$data=ss_sys_function($id,$func);
+			$l=str_replace($func,$data,$l);
+		}
 	}
 
 	if (checkpreg("|gv\.([A-Za-z0-9_-]*)|i",$l)==true){
-		$var=fetchpreg("|gv\.([A-Za-z0-9_-]*)|i",$l);
-		$va=ss_code_variables_get("global",$var);
-		if ($va!==false){
-			$l=str_replace("gv.".$var."",$va,$l);
+		preg_match_all("|gv\.([A-Za-z0-9_-]*)|i",$l, $got);
+		foreach ($got[1] as $var){
+			$va=ss_code_variables_get("global",$var);
+			if ($va!==false){
+				$l=str_replace("gv.".$var."",$va,$l);
+			}
 		}
 	}
 
 	if (checkpreg("|v\.([A-Za-z0-9_-]*)|i",$l)==true){
-		$var=fetchpreg("|v\.([A-Za-z0-9_-]*)|i",$l);
-		$va=ss_code_variables_get($id,$var);
-		if ($va!==false){
-			$l=str_replace("v.".$var."",$va,$l);
-		}
+		preg_match_all("|v\.([A-Za-z0-9_-]*)|i",$l, $got);
+			foreach ($got[1] as $var){
+				$va=ss_code_variables_get($id,$var);
+				if ($va!==false){
+					$l=str_replace("v.".$var."",$va,$l);
+				}
+			}
 	}
 
 	return $l;
@@ -68,10 +82,18 @@ function ss_code_variables_string_value($id,$l){
 	$l=trim($l,'"');
 	$l=trim($l,'\'');
 
-	if (checkpreg("|f\.([^\(]*)\(|i",$l)==true){ //--Check if function
-		$func=fetchpreg("|f\.([^\(]*)\(|i",$l);
+	if (checkpreg("|f\.([A-Za-z0-9_-]*)\(|i",$l)==true){ //--Check if function
+		$func=fetchpreg("|f\.([A-Za-z0-9_-]*)\(|i",$l);
 		$data=ss_code_function_run($func);
-		$l=str_replace("f.".$func."()",$data,$l);
+		$l=$data;
+	}
+
+	if (checkpreg("|s\.([A-Za-z0-9_-]*)\(([^\)]*)\)|i",$l)==true){ //--Check if system function
+		preg_match_all("|s\.([A-Za-z0-9_-]*)\(([^\)]*)\)|i",$l, $got);
+		foreach ($got[0] as $func){
+			$data=ss_sys_function($id,$func);
+			$l=$data;
+		}
 	}
 
 	if (checkpreg("|gv\.([A-Za-z0-9_-]*)|i",$l)==true){

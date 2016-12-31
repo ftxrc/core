@@ -2,20 +2,28 @@
 //##############################################################################################################
 //##############################################################################################################-- BASE Functions
 //##############################################################################################################
-	
+
 	function codegenerate($length=8){
 		$characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
 		$rs="";
 		for ($i = 0; $i < $length; $i++){ $rs .= $characters[rand(0, strlen($characters) - 1)]; }
 		return $rs;
 	}
-	
+
+	function trim_clean($value){
+		$value=trim($value);
+		$value=trim($value,'"');
+		$value=trim($value,'\'');
+		$value=trim($value,';');
+		return $value;
+	}
+
 	function fetchpreg($fetch,$data){
 		if (preg_match($fetch, $data, $var)){
 			return $var[1];
 		}
 	}
-	
+
 	function checkpreg($fetch,$data){
 		if (preg_match($fetch, $data, $var)){
 			return true;
@@ -23,22 +31,22 @@
 			return false;
 		}
 	}
-	
+
 	function microtime_float(){
 		list($usec, $sec) = explode(" ", microtime());
 		return ((float)$usec + (float)$sec);
 	}
-	
+
 	function removeblank($s){
 		return preg_replace("/(^[\r\n]*|[\r\n]+)[\s\t]*[\r\n]+/", "\n", $s);
 	}
-	
+
 	function customError($errno, $errstr) {
 		echo "<b>Error: </b> in script, check your log files.<BR>".$errno." - ".$errstr."<BR><br>";
 		echo "Ending Script";
 		die();
 	}
-	
+
 	function makesafe($d,$type="basic"){
 		$d = str_replace("|","&#124;",$d);
 		$d = str_replace("\\","&#92;",$d);
@@ -51,7 +59,7 @@
 		$d = str_replace("`","&#96;",$d);
 		return $d;
 	}
-	
+
 	function mime_type($file) {
 		$mime_type = array(
 			"3dml"			=>	"text/vnd.in3d.3dml",
@@ -750,7 +758,7 @@
 			throw new Exception("Unknown file type");
 		}
 	}
-	
+
 //##############################################################################################################
 //##############################################################################################################-- Startup, Arrays
 //##############################################################################################################
@@ -775,15 +783,18 @@
 	session_id($system["session"]);
 	session_start();
 	ob_start("ob_gzhandler");
-	header('Access-Control-Allow-Origin: *'); 
+	header('Access-Control-Allow-Origin: *');
 	ini_set('date.timezone', 'America/New_York');
 	header('X-Powered-By: SimpleScript');
-	
+
+	//--System data
+	$system["runpath"]=dirname(__FILE__).$settings["location_code"];
+
 	function fixpath($p) {
 		$p=str_replace('\\','/',trim($p));
 		return (substr($p,-1)!='/') ? $p.='/' : $p;
 	}
-	
+
 	//--Break down URL to get file needed
 	$s=$_SERVER["REQUEST_URI"];
 	$u=explode("/",ltrim($s, '/'));
@@ -792,7 +803,7 @@
 		if ($val==""){ $val="index.ssc"; $system["url_code"]=true; }
 		$system["url"].="/".$val."";
 	}
-	
+
 //##############################################################################################################
 //##############################################################################################################-- SS Functions
 //##############################################################################################################
@@ -801,22 +812,23 @@
 	require 'core/code_functions.php';
 	require 'core/code_variables.php';
 	require 'core/run_linebyline.php';
-	
+
 	function ss_runscript($file){
 		if (file_exists($file)){
 			$r="";
-			
+
 			$t=file_get_contents($file, FILE_USE_INCLUDE_PATH);
 			$t=removeblank($t);
 			$t=ss_code_functions_register($t);
+			$t=ss_sys_function_prerun($t);
 			$r=ss_run_linebyline($t);
-			
+
 			echo $r;
 		}else{
 			customError(404,"Cant find file ".$file.".");
 		}
 	}
-	
+
 	//--Check for what page we are loading
 	if ($system["url_code"]==true){
 		ss_runscript(dirname(__FILE__).$settings["location_code"].$system["url"]);
@@ -839,10 +851,10 @@
 			echo "404 can't find ".$filedownload."";
 		}
 	}
-	
+
 	if ($system["debug"]==true){ echo "<!-- ".$system["debug_log"]." \r\n-->"; }
-	
-	
+
+
 	//--Clean up
 	unset($ss_variables);
 	unset($ss_functions);

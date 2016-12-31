@@ -3,6 +3,7 @@
 //#########################################################################################################
 //######################################################################################################### - LINE BY LINE RUN
 //#########################################################################################################
+//############################## - $t = The content that this is checking
 function ss_run_linebyline($t){
 	global $system;
 
@@ -81,81 +82,35 @@ function ss_run_linebyline($t){
 				}
 
 				//--------------------------------------- SYSTEM FUNCTIONS
-				if (checkpreg("|s\.([^\(]*)\(|i",$l)==true && $v["ran"]==false){ //--Check if system function
-					if (checkpreg("|v\.([^=]*)=|i",$l)==false){ //--Check if not a varible set
+				if (checkpreg("|s\.([A-Za-z0-9_-]*)\(|i",$l)==true && $v["ran"]==false){ //--Check if system function
+					if (checkpreg("|v\.([A-Za-z0-9_-]*)=|i",$l)==false){ //--Check if not a varible set
 						$r.=ss_sys_function($id,$l);
 						$v["ran"]=true;
 					}
 				}
 
 				//--------------------------------------- CODE FUNCTIONS
-				if (checkpreg("|f\.([^\(]*)\(\)|i",$l)==true && $v["ran"]==false){ //--Check if function
-					if (checkpreg("|v\.([^=]*)=|i",$l)==false){ //--Check if not a varible set
+				if (checkpreg("|f\.([A-Za-z0-9_-]*)\(\)|i",$l)==true && $v["ran"]==false){ //--Check if function
+					if (checkpreg("|v\.([A-Za-z0-9_-]*)=|i",$l)==false){ //--Check if not a varible set
 						$r.=ss_code_function_run(fetchpreg("|f\.([^\(]*)\(\)|i",$l));
 						$v["ran"]=true;
 					}
 				}
 
 				//--------------------------------------- VARIABLE SET/UPDATE
-				if (checkpreg("|gv\.([^=]*)=|i",$l)==true && $v["ran"]==false){ //--Check if gv.variable set
-					$var=fetchpreg("|gv\.([^=]*)=|i",$l);
-					$value=ltrim(substr($l, strpos($l, "gv.".$var."=") + strlen("gv.".$var."=")));
-					$value=trim($value,'"');
-					$value=trim($value,'\'');
-					$value=ss_code_variables_string_replace($id,$value); //--Check for values from other values and functions with data in line
-					ss_code_variables_save("global",$var,$value);
-					$v["ran"]=true;
+
+				if ($v["ran"]==false){ //--Math for gv.variable
+					if (ss_run_linebyline_variable_math($id,$l,"gv","global")==true){
+						$v["ran"]=true;
+					}
 				}
 
-				if (checkpreg("|gv\.([^\+]*)\+|i",$l)==true && $v["ran"]==false){ //--Check if gv.variable add
-					$var=fetchpreg("|gv\.([^\+]*)\+|i",$l);
-					$value=ltrim(substr($l, strpos($l, "gv.".$var."+") + strlen("gv.".$var."+")));
-					$value=trim($value,'"');
-					$value=trim($value,'\'');
-					$value=ss_code_variables_get("global",$var)+$value;
-					ss_code_variables_save("global",$var,$value);
-					$v["ran"]=true;
+				if ($v["ran"]==false){ //--Math for v.variable
+					if (ss_run_linebyline_variable_math($id,$l,"v",$id)==true){
+						$v["ran"]=true;
+					}
 				}
 
-				if (checkpreg("|gv\.([^-]*)-|i",$l)==true && $v["ran"]==false){ //--Check if gv.variable take
-					$var=fetchpreg("|gv\.([^-]*)-|i",$l);
-					$value=ltrim(substr($l, strpos($l, "gv.".$var."-") + strlen("gv.".$var."-")));
-					$value=trim($value,'"');
-					$value=trim($value,'\'');
-					$value=ss_code_variables_get("global",$var)-$value;
-					ss_code_variables_save("global",$var,$value);
-					$v["ran"]=true;
-				}
-
-				if (checkpreg("|v\.([^=]*)=|i",$l)==true && $v["ran"]==false){ //--Check if v.variable set
-					$var=fetchpreg("|v\.([^=]*)=|i",$l);
-					$value=ltrim(substr($l, strpos($l, "v.".$var."=") + strlen("v.".$var."=")));
-					$value=trim($value,'"');
-					$value=trim($value,'\'');
-					$value=ss_code_variables_string_replace($id,$value); //--Check for values from other values and functions with data in line
-					ss_code_variables_save($id,$var,$value);
-					$v["ran"]=true;
-				}
-
-				if (checkpreg("|v\.([^\+]*)\+|i",$l)==true && $v["ran"]==false){ //--Check if v.variable add
-					$var=fetchpreg("|v\.([^\+]*)\+|i",$l);
-					$value=ltrim(substr($l, strpos($l, "v.".$var."+") + strlen("v.".$var."+")));
-					$value=trim($value,'"');
-					$value=trim($value,'\'');
-					$value=ss_code_variables_get($id,$var)+$value;
-					ss_code_variables_save($id,$var,$value);
-					$v["ran"]=true;
-				}
-
-				if (checkpreg("|v\.([^-]*)-|i",$l)==true && $v["ran"]==false){ //--Check if v.variable take
-					$var=fetchpreg("|v\.([^-]*)-|i",$l);
-					$value=ltrim(substr($l, strpos($l, "v.".$var."-") + strlen("v.".$var."-")));
-					$value=trim($value,'"');
-					$value=trim($value,'\'');
-					$value=ss_code_variables_get($id,$var)-$value;
-					ss_code_variables_save($id,$var,$value);
-					$v["ran"]=true;
-				}
 			}
 
 			//--------------------------------------- IF CODE - ELSE
@@ -201,8 +156,10 @@ function ss_run_linebyline($t){
 }
 
 //#########################################################################################################
-//######################################################################################################### - LINE BY IF STATEMENTS
+//######################################################################################################### - LINE BY LINE IF STATEMENTS
 //#########################################################################################################
+//############################## - $id = ID of the function/area for variable storage
+//############################## - $l = The line content that this is checking
 function ss_run_linebyline_if($id,$l){
 	global $system;
 	if ($system["debug"]==true){ $system["debug_log"].="\r\n> Checking For IF In ID Range ".$id.""; }
@@ -306,6 +263,60 @@ function ss_run_linebyline_if($id,$l){
 
 	if ($system["debug"]==true){ $system["debug_log"].="\r\n> IF Statement Match Result (".$found.")"; }
 	return $found;
+}
+
+//#########################################################################################################
+//######################################################################################################### - LINE BY LINE VAR MATH
+//#########################################################################################################
+//############################## - $id = ID of the function/area for variable storage (dont set with GLOBAL as set and fetch is $scope)
+//############################## - $l = The line content that this is checking
+//############################## - $tag = Variable tag, we run this in a specific order or only want to replace a specific variable type
+//############################## - $scope = The variable storage area used for the main saving and varible calling (GLOBAL, or ID of varible storage)
+function ss_run_linebyline_variable_math($id,$l,$tag,$scope){
+	global $system;
+	$ran=false;
+
+	if (checkpreg("|".$tag."\.([A-Za-z0-9_-]*)=|i",$l)==true && $ran==false){ //--Check if variable set
+		$var=fetchpreg("|".$tag."\.([A-Za-z0-9_-]*)=|i",$l);
+		$value=trim_clean(substr($l, strpos($l, "".$tag.".".$var."=") + strlen("".$tag.".".$var."=")));
+		$value=ss_code_variables_string_replace($id,$value); //--Check for values from other values and functions with data in line
+		ss_code_variables_save($scope,$var,$value);
+		$ran=true;
+	}
+
+	if (checkpreg("|".$tag."\.([A-Za-z0-9_-]*)\+|i",$l)==true && $ran==false){ //--Check if variable add
+		$var=fetchpreg("|".$tag."\.([A-Za-z0-9_-]*)\+|i",$l);
+		$value=trim_clean(substr($l, strpos($l, "".$tag.".".$var."+") + strlen("".$tag.".".$var."+")));
+		$value=ss_code_variables_get($scope,$var)+ss_code_variables_string_replace($id,$value);
+		ss_code_variables_save($scope,$var,$value);
+		$ran=true;
+	}
+
+	if (checkpreg("|".$tag."\.([A-Za-z0-9_-]*)-|i",$l)==true && $ran==false){ //--Check if variable take
+		$var=fetchpreg("|".$tag."\.([A-Za-z0-9_-]*)-|i",$l);
+		$value=trim_clean(substr($l, strpos($l, "".$tag.".".$var."-") + strlen("".$tag.".".$var."-")));
+		$value=ss_code_variables_get($scope,$var)-ss_code_variables_string_replace($id,$value);
+		ss_code_variables_save($scope,$var,$value);
+		$ran=true;
+	}
+
+	if (checkpreg("|".$tag."\.([A-Za-z0-9_-]*)\/|i",$l)==true && $ran==false){ //--Check if variable devide
+		$var=fetchpreg("|".$tag."\.([A-Za-z0-9_-]*)\/|i",$l);
+		$value=trim_clean(substr($l, strpos($l, "".$tag.".".$var."/") + strlen("".$tag.".".$var."/")));
+		$value=ss_code_variables_get($scope,$var)/ss_code_variables_string_replace($id,$value);
+		ss_code_variables_save($scope,$var,$value);
+		$ran=true;
+	}
+
+	if (checkpreg("|".$tag."\.([A-Za-z0-9_-]*)\*|i",$l)==true && $ran==false){ //--Check if variable multiply
+		$var=fetchpreg("|".$tag."\.([A-Za-z0-9_-]*)\*|i",$l);
+		$value=trim_clean(substr($l, strpos($l, "".$tag.".".$var."*") + strlen("".$tag.".".$var."*")));
+		$value=ss_code_variables_get($scope,$var)*ss_code_variables_string_replace($id,$value);
+		ss_code_variables_save($scope,$var,$value);
+		$ran=true;
+	}
+
+	return $ran;
 }
 
 ?>
