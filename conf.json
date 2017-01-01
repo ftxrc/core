@@ -1,8 +1,11 @@
 {
+	"version": "1.1.1",
 	"location_code": "/www",
 	"location_database": "/data",
 	"location_logs": "/logs",
 	"settings_function_loopmax": 2000,
 	"settings_coredebug": false,
-	"version": 1.1
+	"admin_url": "/ss-admin",
+	"admin_password": "changeme",
+	"admin_email": "changeme@codesimplescript.com"
 }

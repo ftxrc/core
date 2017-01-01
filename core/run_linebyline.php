@@ -81,6 +81,14 @@ function ss_run_linebyline($t){
 					}
 				}
 
+				//--------------------------------------- TEMPLATES
+				if (checkpreg("|t\.([A-Za-z0-9_-]*)\(|i",$l)==true && $v["ran"]==false){ //--Check if template call
+					$data=ss_template($id,$l);
+					if ($data==true){
+						$v["ran"]=true;
+					}
+				}
+
 				//--------------------------------------- SYSTEM FUNCTIONS
 				if (checkpreg("|s\.([A-Za-z0-9_-]*)\(|i",$l)==true && $v["ran"]==false){ //--Check if system function
 					if (checkpreg("|v\.([A-Za-z0-9_-]*)=|i",$l)==false){ //--Check if not a varible set

@@ -1,1 +1,11 @@
-s.echo("Yay, you have installed SimpleScript.")
+//Set template file
+s.template("/template.html")
+
+//Basic site info for the template
+t.title("SimpleScript")
+t.description("A free and open source coding language made for everyone")
+t.page_title("Welcome")
+t.credits("&copy; SimpleScript, a open source project.")
+
+//Content
+t.content("This is a lot better then "It works!" is it not?")

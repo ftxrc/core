@@ -789,7 +789,7 @@
 
 	//--System data
 	$system["runpath"]=dirname(__FILE__).$settings["location_code"];
-
+	$system["debug"]=$settings["settings_coredebug"];
 	function fixpath($p) {
 		$p=str_replace('\\','/',trim($p));
 		return (substr($p,-1)!='/') ? $p.='/' : $p;
@@ -809,53 +809,67 @@
 //##############################################################################################################
 
 	require 'core/sys_functions.php';
+	require 'core/templates.php';
 	require 'core/code_functions.php';
 	require 'core/code_variables.php';
 	require 'core/run_linebyline.php';
 
 	function ss_runscript($file){
 		if (file_exists($file)){
-			$r="";
 
 			$t=file_get_contents($file, FILE_USE_INCLUDE_PATH);
 			$t=removeblank($t);
 			$t=ss_code_functions_register($t);
 			$t=ss_sys_function_prerun($t);
-			$r=ss_run_linebyline($t);
 
-			echo $r;
+			$t=ss_run_linebyline($t);
+
+			$t=ss_template_postrun($t);
+
+			echo $t;
 		}else{
 			customError(404,"Cant find file ".$file.".");
 		}
 	}
 
-	//--Check for what page we are loading
-	if ($system["url_code"]==true){
-		ss_runscript(dirname(__FILE__).$settings["location_code"].$system["url"]);
-	}else{
-		$filedownload=dirname(__FILE__).$settings["location_code"].$system["url"];
-		if (file_exists($filedownload)){
-			if (is_dir($filedownload)){
-				echo "Sorry but you cant view the source of a DIR.";
-			}else{
-				$type=mime_type($filedownload);
-				header("Content-Type: ".$type."");
-			    header('Expires: 0');
-			    header('Cache-Control: must-revalidate');
-			    header('Pragma: public');
-			    header('Content-Length: ' . filesize($filedownload));
-			    readfile($filedownload);
-			    exit;
-			}
+	//##############################################################################################################
+	//##############################################################################################################-- Check for what page we are loading load content and run or display
+	//##############################################################################################################
+
+	if (checkpreg("|".$settings["admin_url"]."|i",$system["url"])==false){
+		if ($system["url_code"]==true){
+			ss_runscript(dirname(__FILE__).$settings["location_code"].$system["url"]);
 		}else{
-			echo "404 can't find ".$filedownload."";
+			$filedownload=dirname(__FILE__).$settings["location_code"].$system["url"];
+			if (file_exists($filedownload)){
+				if (is_dir($filedownload)){
+					echo "Sorry but you cant view the source of a DIR.";
+				}else{
+					$type=mime_type($filedownload);
+					header("Content-Type: ".$type."");
+				    header('Expires: 0');
+				    header('Cache-Control: must-revalidate');
+				    header('Pragma: public');
+				    header('Content-Length: ' . filesize($filedownload));
+				    readfile($filedownload);
+				    exit;
+				}
+			}else{
+				echo "404 can't find ".$filedownload."";
+			}
 		}
+	}else{
+		include("admin/admin.php");
 	}
 
+
+	//##############################################################################################################
+	//##############################################################################################################-- Close and end everything
+	//##############################################################################################################
 	if ($system["debug"]==true){ echo "<!-- ".$system["debug_log"]." \r\n-->"; }
 
-
-	//--Clean up
 	unset($ss_variables);
 	unset($ss_functions);
+	unset($storage_template);
+	unset($settings_template);
 	?>

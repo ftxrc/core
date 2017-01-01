@@ -16,10 +16,17 @@ function ss_sys_function($id,$t){
 
 			if ($system["debug"]==true){ $system["debug_log"].="\r\n> Run Function S - ".$func." | ".$t.""; }
 
+			//-------------------------------------------------------------- ECHO
 			if ($func=="echo"){
 				return ss_code_variables_string_replace($id,$code);
 			}
 
+			//-------------------------------------------------------------- TEMPLATE
+			if ($func=="template"){
+				ss_template_set($code);
+			}
+
+			//-------------------------------------------------------------- RUN
 			if ($func=="run"){
 				if (file_exists($system["runpath"].$code)){
 					if (!is_dir($system["runpath"].$code)){
@@ -46,6 +53,17 @@ function ss_sys_function_prerun($t){
 
 	if (checkpreg("|s\.include\(([^\)]*)\)|i",$t)==true){
 		$code_org=fetchpreg("|s\.include\(([^\)]*)\)|i",$t);
+		$code=trim_clean($code_org);
+		if (file_exists($system["runpath"].$code)){
+			if (!is_dir($system["runpath"].$code)){
+				$data=file_get_contents($system["runpath"].$code, FILE_USE_INCLUDE_PATH);
+				$t=str_replace("s.include(".$code_org.")",$data,$t);
+			}
+		}
+	}
+
+	if (checkpreg("|s\.template\(([^\)]*)\)|i",$t)==true){
+		$code_org=fetchpreg("|s\.template\(([^\)]*)\)|i",$t);
 		$code=trim_clean($code_org);
 		if (file_exists($system["runpath"].$code)){
 			if (!is_dir($system["runpath"].$code)){
