@@ -769,12 +769,14 @@
 	$system=array();
 	$settings="";
 	$system["url"]="";
+	$system["location"]=dirname(__FILE__);
 	$system["url_code"]=false;
 	$system["debug"]=true;
 	$system["debug_log"]="";
 	$system["id"]=0;
 	$cache=array();
 	$settings=json_decode(utf8_encode(file_get_contents('./conf.json', FILE_USE_INCLUDE_PATH)), true); //Fetch Config Data
+	$system_data=json_decode(utf8_encode(file_get_contents('./data.json', FILE_USE_INCLUDE_PATH)), true); //Fetch Config Data
 	if (isset($_COOKIE["coss"])){
 		$system["session"]=$_COOKIE["coss"];
 	}else{
