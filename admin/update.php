@@ -14,9 +14,11 @@
 	}
 	nhlog("** Install Started **");
 
-  $source = "https://github.com/codesimplescript/core/archive/master.zip";
-  $dest = "installme.zip";
-  copy($source, $dest);
+  if (!isset($_GET["part"])){
+    $source = "https://github.com/codesimplescript/core/archive/master.zip";
+    $dest = "installme.zip";
+    copy($source, $dest);
+  }
 
 	$path = 'installme.zip';
 	$zip = new ZipArchive;
