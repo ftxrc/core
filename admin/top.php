@@ -18,6 +18,14 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+a{
+  color:#555555;
+}
+
+a:hover{
+  color:#777777;
+}
+
 .overlay, .form-panel.one:before {
   position: absolute;
   top: 0;
@@ -202,6 +210,15 @@ body {
   transition: 0.3s ease;
   cursor: pointer;
 }
+
+.form-panel.two a{
+  color:#ffffff;
+}
+
+.form-panel.two a:hover{
+  color:#f3f3f3;
+}
+
 .form-panel.two:before, .form-panel.two:after {
   content: '';
   display: block;

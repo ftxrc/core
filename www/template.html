@@ -4,13 +4,10 @@
 		<title>{{title}}</title>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
-		<!--[if lte IE 8]><script src="assets/js/ie/html5shiv.js"></script><![endif]-->
 		<link rel="stylesheet" href="assets/css/main.css" />
-		<!--[if lte IE 9]><link rel="stylesheet" href="assets/css/ie9.css" /><![endif]-->
-		<!--[if lte IE 8]><link rel="stylesheet" href="assets/css/ie8.css" /><![endif]-->
 	</head>
 	<body>
-		<div style="position:fixed;z-index:-500;left:0px;top:0px;width:100%;height:100%;background: url('https://source.unsplash.com/6x90rJDo-WA/1920x1080');background-size: cover !important;background-position: center center !important;"></div>
+		<div class='background'></div>
 		
 		<!-- Wrapper -->
 			<div id="wrapper">
@@ -24,10 +21,7 @@
 				<!-- Nav -->
 					<nav id="nav">
 						<ul>
-							<li><a href="#intro" class="active">Introduction</a></li>
-							<li><a href="#first">First Section</a></li>
-							<li><a href="#second">Second Section</a></li>
-							<li><a href="#cta">Get Started</a></li>
+							{{menu}}
 						</ul>
 					</nav>
 
@@ -39,7 +33,7 @@
 										<header class="major">
 											<h2>{{page_title}}</h2>
 										</header>
-										<p>{{content}}</p>
+										{{content}}
 									</div>
 								</div>
 							</section>
@@ -59,7 +53,6 @@
 			<script src="assets/js/jquery.scrolly.min.js"></script>
 			<script src="assets/js/skel.min.js"></script>
 			<script src="assets/js/util.js"></script>
-			<!--[if lte IE 8]><script src="assets/js/ie/respond.min.js"></script><![endif]-->
 			<script src="assets/js/main.js"></script>
 
 	</body>

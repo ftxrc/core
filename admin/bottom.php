@@ -6,6 +6,10 @@
   </div>
   <div class="form-content">
     <div class="form-group">
+      <label for="username">Menu</label>
+      <a href="<?php echo $settings["admin_url"]; ?>?page=dash">Dashboard</a>
+    </div>
+    <div class="form-group">
       <label for="username">About</label>
       SimpleScript is a coding lanuage that is easy to learn and manage. This admin page is designed to allow the user to update SimpleScript but also see site stats and usage data.
     </div>
@@ -21,7 +25,6 @@ $(document).ready(function() {
     panelTwo = $('.form-panel.two')[0].scrollHeight;
 
   $('.form-panel.two').not('.form-panel.two.active').on('click', function(e) {
-    e.preventDefault();
     $('.form-toggle').addClass('visible');
     $('.form-panel.one').addClass('hidden');
     $('.form-panel.two').addClass('active');
@@ -31,7 +34,6 @@ $(document).ready(function() {
   });
 
   $('.form-toggle').on('click', function(e) {
-    e.preventDefault();
     $(this).removeClass('visible');
     $('.form-panel.one').removeClass('hidden');
     $('.form-panel.two').removeClass('active');

@@ -11,6 +11,12 @@
 	}
 
 	function trim_clean($value){
+		//--Remove back slash from escaped quotes \"
+		$type=substr($value,0,1);
+		if ($type=="\"" OR $type=="'"){
+			$value=str_replace('\\'.$type,$type,$value);
+		}
+
 		$value=trim($value);
 		$value=trim($value,'"');
 		$value=trim($value,'\'');
@@ -39,6 +45,10 @@
 
 	function removeblank($s){
 		return preg_replace("/(^[\r\n]*|[\r\n]+)[\s\t]*[\r\n]+/", "\n", $s);
+	}
+
+	function log_error($error, $line){
+
 	}
 
 	function customError($errno, $errstr) {
@@ -788,7 +798,7 @@
 	header('Access-Control-Allow-Origin: *');
 	ini_set('date.timezone', 'America/New_York');
 	header('X-Powered-By: SimpleScript');
-
+	register_shutdown_function('shutdown');
 	//--System data
 	$system["runpath"]=dirname(__FILE__).$settings["location_code"];
 	$system["debug"]=$settings["settings_coredebug"];
@@ -804,6 +814,12 @@
 		if (checkpreg("|([^\.]*)\.ssc|i",$val)==true){ $system["url_code"]=true; }
 		if ($val==""){ $val="index.ssc"; $system["url_code"]=true; }
 		$system["url"].="/".$val."";
+	}
+	if (!file_exists(dirname(__FILE__).$settings["location_code"].$system["url"])){ //--If cant find a file matching lets see if a .ssc file is in place with that name
+		if (file_exists(dirname(__FILE__).$settings["location_code"].$system["url"].".ssc")){
+			$system["url"].=".ssc";
+			$system["url_code"]=true;
+		}
 	}
 
 //##############################################################################################################
@@ -870,6 +886,10 @@
 	//##############################################################################################################
 	if ($system["debug"]==true){ echo "<!-- ".$system["debug_log"]." \r\n-->"; }
 
+
+	function shutdown(){
+
+	}
 	unset($ss_variables);
 	unset($ss_functions);
 	unset($storage_template);

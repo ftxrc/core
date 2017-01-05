@@ -36,8 +36,7 @@ function ss_code_variables_save($id,$var,$value){
 
 function ss_code_variables_string_replace($id,$l){
 	global $system;
-	$l=trim($l,'"');
-	$l=trim($l,'\'');
+	$l=trim_clean($l);
 
 	if (checkpreg("|f\.([A-Za-z0-9_-]*)\(|i",$l)==true){ //--Check if function
 		preg_match_all("|f\.([A-Za-z0-9_-]*)\(|i",$l, $got);
@@ -75,12 +74,11 @@ function ss_code_variables_string_replace($id,$l){
 			}
 	}
 
-	return $l;
+	return trim_clean($l);
 }
 
 function ss_code_variables_string_value($id,$l){
-	$l=trim($l,'"');
-	$l=trim($l,'\'');
+	$l=trim_clean($l);
 
 	if (checkpreg("|f\.([A-Za-z0-9_-]*)\(|i",$l)==true){ //--Check if function
 		$func=fetchpreg("|f\.([A-Za-z0-9_-]*)\(|i",$l);
@@ -112,7 +110,7 @@ function ss_code_variables_string_value($id,$l){
 		}
 	}
 
-	return $l;
+	return trim_clean($l);
 }
 
 ?>
