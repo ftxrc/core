@@ -1,9 +1,9 @@
 <?php
   ini_set('memory_limit','60M');
   set_time_limit(1200);
-  $today = date("m.d.y");
 
 	function nhlog($line){
+		$today = date("m.d.y");
 		error_log("- ".$line."\n", 3, "system_update_".$today.".log");
 	}
 	function percent($num_amount, $num_total) {
