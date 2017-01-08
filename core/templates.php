@@ -13,11 +13,11 @@ function ss_template($id,$t){
 	global $storage_template;
 	global $settings_template;
 
-	if (checkpreg("|t\.([A-Za-z0-9_-]*)\(([^\)]*)\)|i",$t)==true){ //--Check if we have a match for t.[A-Za-z0-9_-]()
-		preg_match_all("|t\.([A-Za-z0-9_-]*)\(([^\)]*)\)|i",$t, $got); //--Fetch each instance of the template call
+	if (checkpreg("|t\.([A-Za-z0-9_-]*)\((.*)\)|i",$t)==true){ //--Check if we have a match for t.[A-Za-z0-9_-]()
+		preg_match_all("|t\.([A-Za-z0-9_-]*)\((.*)\)|i",$t, $got); //--Fetch each instance of the template call
 		foreach ($got[0] as $script){ //--For each found template function that matches return only contained patern
-			$func=fetchpreg("|t\.([A-Za-z0-9_-]*)\(|i",$script); //--Take that patern that was returned and fetch from it the template name.
-			$code=trim_clean(fetchpreg("|t\.".$func."\(([^\)]*)\)|i",$script)); //--Take that patern that was returned and fetch from it the template content.
+			$func=fetchpreg("|t\.([A-Za-z0-9_-]*)\(|i",$t); //--Take that patern that was returned and fetch from it the template name.
+			$code=trim_clean(fetchpreg("|t\.".$func."\((.*)\)|i",$t)); //--Take that patern that was returned and fetch from it the template content.
 			if ($system["debug"]==true){ $system["debug_log"].="\r\n> Run Template Add - ".$func." | ".$t.""; }
 
 			//--Store the content added onto the template storage for post build

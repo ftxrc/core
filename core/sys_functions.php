@@ -8,11 +8,11 @@
 function ss_sys_function($id,$t){
 	global $system;
 
-	if (checkpreg("|s\.([A-Za-z0-9_-]*)\(([^\)]*)\)|i",$t)==true){ //--Check if we have a match for s.[A-Za-z0-9_-]()
-		preg_match_all("|s\.([A-Za-z0-9_-]*)\(([^\)]*)\)|i",$t, $got); //--Fetch each instance of a function on it's own so we dont mix them up
+	if (checkpreg("|s\.([A-Za-z0-9_-]*)\((.*)\)|i",$t)==true){ //--Check if we have a match for s.[A-Za-z0-9_-]()
+		preg_match_all("|s\.([A-Za-z0-9_-]*)\((.*)\)|i",$t, $got); //--Fetch each instance of a function on it's own so we dont mix them up
 		foreach ($got[0] as $script){ //--For each found function that matches return only contained patern
-			$func=fetchpreg("|s\.([A-Za-z0-9_-]*)\(|i",$script); //--Take that patern that was returned and fetch from it the function name.
-			$code=fetchpreg("|s\.".$func."\(([^\)]*)\)|i",$script); //--Take that patern that was returned and fetch from it the function content.
+			$func=fetchpreg("|s\.([A-Za-z0-9_-]*)\(|i",$t); //--Take that patern that was returned and fetch from it the function name.
+			$code=fetchpreg("|s\.".$func."\((.*)\)|i",$t); //--Take that patern that was returned and fetch from it the function content.
 
 			$code_part=ss_sys_function_inputarray($id,$code);//--break comma seperate parts into an array
 			$code=ss_code_variables_string_replace($id,trim_clean($code));

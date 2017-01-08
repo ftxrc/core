@@ -808,7 +808,11 @@
 	}
 
 	//--Break down URL to get file needed
-	$s=$_SERVER["REQUEST_URI"];
+	if (isset($_SERVER["REQUEST_URI"])){
+		$s=$_SERVER["REQUEST_URI"];
+	}else{
+		$s="index.ssc";
+	}
 	$u=explode("/",ltrim($s, '/'));
 	while(list($key,$val)=each($u)){
 		if (checkpreg("|([^\.]*)\.ssc|i",$val)==true){ $system["url_code"]=true; }
@@ -889,9 +893,9 @@
 
 	function shutdown(){
 
+		unset($ss_variables);
+		unset($ss_functions);
+		unset($storage_template);
+		unset($settings_template);
 	}
-	unset($ss_variables);
-	unset($ss_functions);
-	unset($storage_template);
-	unset($settings_template);
 	?>
